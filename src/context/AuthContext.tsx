@@ -1,10 +1,11 @@
 import { createContext, useState, useEffect, type ReactNode } from "react";
+import { api } from "../services/api";
 
 type AuthContext = {
   isLoading: boolean;
   session: null | UserAPIResponse;
   save: (data: UserAPIResponse) => void;
-  remove: () => void
+  remove: () => void;
 };
 
 const LOCAL_STORAGE_KEY = "@refund";
@@ -22,6 +23,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     );
     localStorage.setItem(`${LOCAL_STORAGE_KEY}:token`, data.token);
 
+    api.defaults.headers.common["Authorization"] = `Bearer ${data.token}`;
+
     setSession(data);
   }
 
@@ -31,7 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem(`${LOCAL_STORAGE_KEY}:user`);
     localStorage.removeItem(`${LOCAL_STORAGE_KEY}:token`);
 
-    window.location.assign("/")
+    window.location.assign("/");
   }
 
   function loadUser() {
@@ -39,6 +42,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const token = localStorage.getItem(`${LOCAL_STORAGE_KEY}:user`);
 
     if (token && user) {
+      api.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       setSession({
         token,
         user: JSON.parse(user),
